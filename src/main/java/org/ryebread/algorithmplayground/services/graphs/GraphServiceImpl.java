@@ -8,12 +8,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Stack;
+import java.util.function.Predicate;
 
+import org.ryebread.algorithmplayground.structures.graph.AdjacencyMapGraph;
 import org.ryebread.algorithmplayground.structures.graph.Edge;
 import org.ryebread.algorithmplayground.structures.graph.EdgeType;
 import org.ryebread.algorithmplayground.structures.graph.Graph;
 import org.ryebread.algorithmplayground.structures.graph.WeightedAdjacencyMapGraph;
 import org.ryebread.algorithmplayground.structures.graph.WeightedGraph;
+import org.ryebread.algorithmplayground.structures.lists.Pushable;
+import org.ryebread.algorithmplayground.structures.lists.PushableQueue;
+import org.ryebread.algorithmplayground.structures.lists.PushableStack;
 import org.ryebread.algorithmplayground.structures.unionfind.UnionFind;
 import org.springframework.stereotype.Service;
 
@@ -151,6 +157,45 @@ public class GraphServiceImpl implements GraphService {
 		}
 
 		return minimumSpanningTree;
+	}
+
+	@Override
+	public <T> List<T> breadthFirstSearch(Graph<T> graph, T start) {
+		return graphSearch(graph, start, new PushableQueue<>());
+	}
+
+	@Override
+	public <T> List<T> depthFirstSearch(Graph<T> graph, T start) {
+		return graphSearch(graph, start, new PushableStack<>());
+	}
+
+	private <T> List<T> graphSearch(Graph<T> graph, T start, Pushable<T> nextNodes) {
+		if (!graph.hasVertex(start)) {
+			return null;
+		}
+		List<T> orderedNodes = new LinkedList<>();
+		Map<T, Boolean> visitedMap = new HashMap<>();
+
+		for (T vertex : graph.getVertices()) {
+			visitedMap.put(vertex, false);
+		}
+
+		nextNodes.push(start);
+		visitedMap.put(start, true);
+
+		while (!nextNodes.isEmpty()) {
+			T next = nextNodes.pop();
+			orderedNodes.add(next);
+			for (Edge<T> edge : graph.getEdges(next)) {
+				T to = edge.to();
+				if (!visitedMap.get(to)) {
+					nextNodes.push(to);
+					visitedMap.put(to, true);
+				}
+			}
+		}
+
+		return orderedNodes;
 	}
 
 }

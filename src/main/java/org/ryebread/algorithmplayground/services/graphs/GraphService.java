@@ -14,4 +14,7 @@ public interface GraphService {
 
 	public <T> WeightedGraph<T> kruskals(WeightedGraph<T> graph);
 
+	public <T> List<T> breadthFirstSearch(Graph<T> graph, T start);
+
+	public <T> List<T> depthFirstSearch(Graph<T> graph, T start);
 }

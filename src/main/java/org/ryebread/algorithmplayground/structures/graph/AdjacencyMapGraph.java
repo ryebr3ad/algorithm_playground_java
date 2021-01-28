@@ -34,13 +34,19 @@ public class AdjacencyMapGraph<T> implements Graph<T> {
 
 	@Override
 	public void addVertex(T vertex) {
-		if (!incidenceMap.containsKey(vertex)) {
+		if (!hasVertex(vertex)) {
 			incidenceMap.put(vertex, new LinkedList<>());
 		}
 	}
 
+	@Override
 	public int numVertices() {
 		return incidenceMap.keySet().size();
+	}
+	
+	@Override
+	public boolean hasVertex(T vertex) {
+		return incidenceMap.containsKey(vertex);
 	}
 
 	@Override
