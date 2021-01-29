@@ -17,9 +17,6 @@ import org.ryebread.algorithmplayground.structures.graph.EdgeType;
 import org.ryebread.algorithmplayground.structures.graph.Graph;
 import org.ryebread.algorithmplayground.structures.graph.WeightedAdjacencyMapGraph;
 import org.ryebread.algorithmplayground.structures.graph.WeightedGraph;
-import org.ryebread.algorithmplayground.structures.lists.Pushable;
-import org.ryebread.algorithmplayground.structures.lists.PushableQueue;
-import org.ryebread.algorithmplayground.structures.lists.PushableStack;
 import org.ryebread.algorithmplayground.structures.unionfind.UnionFind;
 import org.springframework.stereotype.Service;
 
