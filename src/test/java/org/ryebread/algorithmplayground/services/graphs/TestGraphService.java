@@ -97,7 +97,7 @@ public class TestGraphService {
 		System.out.println(orderedNodes);
 
 	}
-	
+
 	@Test
 	public void testDfs() {
 		Graph<String> gph = new AdjacencyMapGraph<>();
@@ -108,18 +108,26 @@ public class TestGraphService {
 		gph.addVertex("D");
 		gph.addVertex("E");
 		gph.addVertex("F");
+		gph.addVertex("G");
+		gph.addVertex("H");
 
 		gph.addEdge("A", "B");
-		gph.addEdge("A", "C");
-		gph.addEdge("A", "D");
+		gph.addEdge("A", "G");
+		gph.addEdge("A", "H");
 
-		gph.addEdge("B", "D");
+		gph.addEdge("B", "C");
+		gph.addEdge("B", "E");
 
-		gph.addEdge("C", "F");
+		gph.addEdge("C", "D");
 
-		gph.addEdge("D", "E");
+		gph.addEdge("E", "D");
 
-		gph.addEdge("E", "F");
+		gph.addEdge("F", "E");
+
+		gph.addEdge("G", "F");
+		gph.addEdge("G", "H");
+
+		gph.addEdge("H", "E");
 
 		List<String> orderedNodes = graphService.depthFirstSearch(gph, "A");
 		System.out.println(orderedNodes);

@@ -161,15 +161,7 @@ public class GraphServiceImpl implements GraphService {
 
 	@Override
 	public <T> List<T> breadthFirstSearch(Graph<T> graph, T start) {
-		return graphSearch(graph, start, new PushableQueue<>());
-	}
-
-	@Override
-	public <T> List<T> depthFirstSearch(Graph<T> graph, T start) {
-		return graphSearch(graph, start, new PushableStack<>());
-	}
-
-	private <T> List<T> graphSearch(Graph<T> graph, T start, Pushable<T> nextNodes) {
+		Queue<T> nextNodes = new LinkedList<>();
 		if (!graph.hasVertex(start)) {
 			return null;
 		}
@@ -180,22 +172,49 @@ public class GraphServiceImpl implements GraphService {
 			visitedMap.put(vertex, false);
 		}
 
-		nextNodes.push(start);
+		nextNodes.add(start);
 		visitedMap.put(start, true);
 
 		while (!nextNodes.isEmpty()) {
-			T next = nextNodes.pop();
+			T next = nextNodes.remove();
 			orderedNodes.add(next);
 			for (Edge<T> edge : graph.getEdges(next)) {
 				T to = edge.to();
 				if (!visitedMap.get(to)) {
-					nextNodes.push(to);
+					nextNodes.add(to);
 					visitedMap.put(to, true);
 				}
 			}
 		}
 
 		return orderedNodes;
+	}
+
+	@Override
+	public <T> List<T> depthFirstSearch(Graph<T> graph, T start) {
+		if (!graph.hasVertex(start)) {
+			return null;
+		}
+		List<T> orderedNodes = new LinkedList<>();
+		Map<T, Boolean> visitedMap = new HashMap<>();
+
+		for (T vertex : graph.getVertices()) {
+			visitedMap.put(vertex, false);
+		}
+
+		dfs(graph, start, visitedMap, orderedNodes);
+
+		return orderedNodes;
+	}
+
+	private <T> void dfs(Graph<T> graph, T vertex, Map<T, Boolean> visitedMap, List<T> orderedNodes) {
+		visitedMap.put(vertex, true);
+		for (Edge<T> edge : graph.getEdges(vertex)) {
+			if (!visitedMap.get(edge.to())) {
+				dfs(graph, edge.to(), visitedMap, orderedNodes);
+			}
+		}
+		orderedNodes.add(vertex);
 	}
 
 }
