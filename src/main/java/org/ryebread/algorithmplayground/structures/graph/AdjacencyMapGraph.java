@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class AdjacencyMapGraph<T> implements Graph<T> {
+public class AdjacencyMapGraph<T extends Comparable<T>> implements Graph<T> {
 
 	protected Map<T, List<Edge<T>>> incidenceMap;
 	protected EdgeType edgeType;
@@ -84,6 +84,19 @@ public class AdjacencyMapGraph<T> implements Graph<T> {
 	@Override
 	public boolean hasEdge(T from, T to) {
 		return getEdge(from, to) != null;
+	}
+	
+	@Override
+	public Graph<T> reverse() {
+		Graph<T> reversedGraph = new AdjacencyMapGraph<T>(this.getVertices());
+
+		for(T vertex : this.getVertices()) {
+			for(Edge<T> edge : this.getEdges(vertex)) {
+				reversedGraph.addEdge(edge.to(), edge.from());
+			}
+		}
+		
+		return reversedGraph;
 	}
 
 	public AdjacencyMapGraph<T> deepCopy() {

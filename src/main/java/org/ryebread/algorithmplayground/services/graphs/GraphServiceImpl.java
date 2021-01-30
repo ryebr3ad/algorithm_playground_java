@@ -2,16 +2,13 @@ package org.ryebread.algorithmplayground.services.graphs;
 
 import java.util.AbstractQueue;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.Stack;
-import java.util.function.Predicate;
-
-import org.ryebread.algorithmplayground.structures.graph.AdjacencyMapGraph;
 import org.ryebread.algorithmplayground.structures.graph.Edge;
 import org.ryebread.algorithmplayground.structures.graph.EdgeType;
 import org.ryebread.algorithmplayground.structures.graph.Graph;
@@ -24,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class GraphServiceImpl implements GraphService {
 
 	@Override
-	public <T> List<T> topologicalSort(Graph<T> graph) {
+	public <T extends Comparable<T>> List<T> topologicalSort(Graph<T> graph) {
 		Queue<T> next = new LinkedList<>();
 		Map<T, Integer> inDegrees = new HashMap<>(graph.numVertices());
 
@@ -63,7 +60,7 @@ public class GraphServiceImpl implements GraphService {
 	}
 
 	@Override
-	public <T> WeightedGraph<T> prims(WeightedGraph<T> graph) {
+	public <T extends Comparable<T>> WeightedGraph<T> prims(WeightedGraph<T> graph) {
 		final Map<T, Long> valueMap = new HashMap<>();
 		Map<T, T> parentMap = new HashMap<>();
 
@@ -124,7 +121,7 @@ public class GraphServiceImpl implements GraphService {
 	}
 
 	@Override
-	public <T> WeightedGraph<T> kruskals(WeightedGraph<T> graph) {
+	public <T extends Comparable<T>> WeightedGraph<T> kruskals(WeightedGraph<T> graph) {
 
 		UnionFind<T> union = new UnionFind<>();
 		AbstractQueue<Edge<T>> heap = new PriorityQueue<>();
@@ -157,11 +154,8 @@ public class GraphServiceImpl implements GraphService {
 	}
 
 	@Override
-	public <T> List<T> breadthFirstSearch(Graph<T> graph, T start) {
+	public <T extends Comparable<T>> List<T> breadthFirstSearch(Graph<T> graph) {
 		Queue<T> nextNodes = new LinkedList<>();
-		if (!graph.hasVertex(start)) {
-			return null;
-		}
 		List<T> orderedNodes = new LinkedList<>();
 		Map<T, Boolean> visitedMap = new HashMap<>();
 
@@ -169,8 +163,19 @@ public class GraphServiceImpl implements GraphService {
 			visitedMap.put(vertex, false);
 		}
 
-		nextNodes.add(start);
-		visitedMap.put(start, true);
+		for (T vertex : graph.getVertices()) {
+			if (!visitedMap.get(vertex)) {
+				bfs(graph, nextNodes, orderedNodes, visitedMap, vertex);
+			}
+		}
+
+		return orderedNodes;
+	}
+
+	private <T extends Comparable<T>> void bfs(Graph<T> graph, Queue<T> nextNodes, List<T> orderedNodes,
+			Map<T, Boolean> visitedMap, T vertex) {
+		nextNodes.add(vertex);
+		visitedMap.put(vertex, true);
 
 		while (!nextNodes.isEmpty()) {
 			T next = nextNodes.remove();
@@ -183,28 +188,113 @@ public class GraphServiceImpl implements GraphService {
 				}
 			}
 		}
+	}
+
+	@Override
+	public <T extends Comparable<T>> List<T> depthFirstSearch(Graph<T> graph) {
+		List<T> orderedNodes = new LinkedList<>();
+
+		Map<T, Boolean> visitedMap = initVisitedMap(graph);
+
+		for (T vertex : graph.getVertices()) {
+			if (!visitedMap.get(vertex)) {
+				dfs(graph, vertex, visitedMap, orderedNodes);
+			}
+		}
 
 		return orderedNodes;
 	}
 
 	@Override
-	public <T> List<T> depthFirstSearch(Graph<T> graph, T start) {
-		if (!graph.hasVertex(start)) {
-			return null;
-		}
-		List<T> orderedNodes = new LinkedList<>();
-		Map<T, Boolean> visitedMap = new HashMap<>();
+	public <T extends Comparable<T>> List<List<T>> stronglyConnectedComponents(Graph<T> graph) {
+		//1. Run a depth-first search and output the nodes in searched order
+		List<T> dfsNodes = depthFirstSearch(graph);
 
+		//2. Reverse the edges of the graph
+		Graph<T> reversedGraph = graph.reverse();
+
+		/*
+		 * 3. reverse the order of the DFS-ordered nodes, then iterate 
+		 * through that list and DFS on the reversed graph
+		 */
+		Collections.reverse(dfsNodes);
+
+		Map<T, Boolean> visitedMap = initVisitedMap(reversedGraph);
+		List<List<T>> componentList = new LinkedList<>();
+
+		for (T vertex : dfsNodes) {
+			if (!visitedMap.get(vertex)) {
+				List<T> componentNodes = new LinkedList<>();
+				dfs(reversedGraph, vertex, visitedMap, componentNodes);
+				componentList.add(componentNodes);
+			}
+		}
+
+		return componentList;
+	}
+
+	@Override
+	public <T extends Comparable<T>> WeightedGraph<T> dijkstras(WeightedGraph<T> graph, T start) {
+		Map<T, T> parentMap = new HashMap<>();
+		Map<T, Boolean> scannedMap = new HashMap<>();
+		final Map<T, Long> distanceMap = new HashMap<>();
+
+		for (T vertex : graph.getVertices()) {
+			parentMap.put(vertex, null);
+			scannedMap.put(vertex, false);
+			distanceMap.put(vertex, Long.MAX_VALUE);
+		}
+
+		// Use the value map as the comparator for the heap.
+		AbstractQueue<T> heap = new PriorityQueue<>((a, b) -> {
+			return distanceMap.get(a).compareTo(distanceMap.get(b));
+		});
+
+		//Distance from the starting vertex to itself is always 0
+		distanceMap.put(start, 0L);
+		heap.add(start);
+
+		while (!heap.isEmpty()) {
+			T parent = heap.remove();
+			Long parentDistance = distanceMap.get(parent);
+			for (Edge<T> edge : graph.getEdges(parent)) {
+				if (!scannedMap.get(edge.to())) {
+					Long proposedDistance = parentDistance + edge.getWeight();
+					if (proposedDistance < distanceMap.get(edge.to())) {
+						distanceMap.put(edge.to(), proposedDistance);
+						parentMap.put(edge.to(), parent);
+						heap.remove(edge.to());
+						heap.add(edge.to());
+					}
+				}
+			}
+			scannedMap.put(parent, true);
+		}
+
+		WeightedGraph<T> shortestPathGraph = new WeightedAdjacencyMapGraph<>(graph.getVertices());
+
+		for (T vertex : shortestPathGraph.getVertices()) {
+			if (parentMap.get(vertex) != null) {
+				T from = parentMap.get(vertex);
+				T to = vertex;
+				Long weight = graph.getEdge(from, to).getWeight();
+				shortestPathGraph.addEdge(from, to, weight);
+			}
+		}
+
+		return shortestPathGraph;
+	}
+
+	private <T extends Comparable<T>> Map<T, Boolean> initVisitedMap(Graph<T> graph) {
+		Map<T, Boolean> visitedMap = new HashMap<>();
 		for (T vertex : graph.getVertices()) {
 			visitedMap.put(vertex, false);
 		}
-
-		dfs(graph, start, visitedMap, orderedNodes);
-
-		return orderedNodes;
+		return visitedMap;
 	}
 
-	private <T> void dfs(Graph<T> graph, T vertex, Map<T, Boolean> visitedMap, List<T> orderedNodes) {
+	private <T extends Comparable<T>> void dfs(Graph<T> graph, T vertex, Map<T, Boolean> visitedMap,
+			List<T> orderedNodes) {
 		visitedMap.put(vertex, true);
 		for (Edge<T> edge : graph.getEdges(vertex)) {
 			if (!visitedMap.get(edge.to())) {

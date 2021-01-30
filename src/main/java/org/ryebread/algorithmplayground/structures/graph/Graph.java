@@ -8,7 +8,7 @@ package org.ryebread.algorithmplayground.structures.graph;
  * 
  * @author Ryan
  */
-public interface Graph<T> {
+public interface Graph<T extends Comparable<T>> {
 
 	public abstract void addVertex(T vertex);
 
@@ -25,5 +25,7 @@ public interface Graph<T> {
 	public abstract Iterable<Edge<T>> getEdges(T vertex);
 
 	public abstract boolean hasEdge(T from, T to);
+
+	public abstract Graph<T> reverse();
 
 }

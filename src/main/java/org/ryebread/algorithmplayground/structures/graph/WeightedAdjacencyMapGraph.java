@@ -1,6 +1,6 @@
 package org.ryebread.algorithmplayground.structures.graph;
 
-public class WeightedAdjacencyMapGraph<T> extends AdjacencyMapGraph<T> implements WeightedGraph<T> {
+public class WeightedAdjacencyMapGraph<T extends Comparable<T>> extends AdjacencyMapGraph<T> implements WeightedGraph<T> {
 
 	public static final Long DEFAULT_WEIGHT = 5L;
 

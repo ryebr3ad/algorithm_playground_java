@@ -1,6 +1,8 @@
 package org.ryebread.algorithmplayground.services.graphs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedList;
@@ -71,35 +73,7 @@ public class TestGraphService {
 	}
 
 	@Test
-	public void testBfs() {
-		Graph<String> gph = new AdjacencyMapGraph<>();
-
-		gph.addVertex("A");
-		gph.addVertex("B");
-		gph.addVertex("C");
-		gph.addVertex("D");
-		gph.addVertex("E");
-		gph.addVertex("F");
-
-		gph.addEdge("A", "B");
-		gph.addEdge("A", "C");
-		gph.addEdge("A", "D");
-
-		gph.addEdge("B", "D");
-
-		gph.addEdge("C", "F");
-
-		gph.addEdge("D", "E");
-
-		gph.addEdge("E", "F");
-
-		List<String> orderedNodes = graphService.breadthFirstSearch(gph, "A");
-		System.out.println(orderedNodes);
-
-	}
-
-	@Test
-	public void testDfs() {
+	public void testStronglyConnectedComponents() {
 		Graph<String> gph = new AdjacencyMapGraph<>();
 
 		gph.addVertex("A");
@@ -109,29 +83,56 @@ public class TestGraphService {
 		gph.addVertex("E");
 		gph.addVertex("F");
 		gph.addVertex("G");
-		gph.addVertex("H");
 
 		gph.addEdge("A", "B");
-		gph.addEdge("A", "G");
-		gph.addEdge("A", "H");
 
 		gph.addEdge("B", "C");
 		gph.addEdge("B", "E");
+		gph.addEdge("B", "F");
 
-		gph.addEdge("C", "D");
+		gph.addEdge("C", "G");
 
-		gph.addEdge("E", "D");
+		gph.addEdge("D", "C");
 
-		gph.addEdge("F", "E");
+		gph.addEdge("E", "A");
 
-		gph.addEdge("G", "F");
-		gph.addEdge("G", "H");
+		gph.addEdge("F", "G");
 
-		gph.addEdge("H", "E");
+		gph.addEdge("G", "D");
 
-		List<String> orderedNodes = graphService.depthFirstSearch(gph, "A");
-		System.out.println(orderedNodes);
+		List<List<String>> components = graphService.stronglyConnectedComponents(gph);
+		assertEquals(components.size(), 3);
+	}
 
+	@Test
+	public void testDijkstras() {
+		WeightedGraph<String> gph = new WeightedAdjacencyMapGraph<>(EdgeType.UNDIRECTED);
+
+		gph.addVertex("A");
+		gph.addVertex("B");
+		gph.addVertex("C");
+		gph.addVertex("D");
+		gph.addVertex("E");
+		gph.addVertex("F");
+
+		gph.addEdge("A", "B", 4L);
+		gph.addEdge("A", "C", 1L);
+		gph.addEdge("A", "D", 1L);
+
+		gph.addEdge("B", "C", 2L);
+		gph.addEdge("B", "F", 1L);
+
+		gph.addEdge("C", "D", 4L);
+		gph.addEdge("C", "E", 3L);
+		gph.addEdge("C", "F", 4L);
+
+		gph.addEdge("D", "E", 2L);
+
+		gph.addEdge("E", "F", 1L);
+
+		WeightedGraph<String> shortestPathGph = graphService.dijkstras(gph, "A");
+		assertNull(shortestPathGph.getEdge("A", "B"));
+		assertNotNull(shortestPathGph.getEdge("A", "C"));
 	}
 
 }
