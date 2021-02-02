@@ -1,4 +1,4 @@
-package org.ryebread.algorithmplayground.services.graphs;
+package org.ryebread.algorithmplayground.services.graph;
 
 import java.util.List;
 import java.util.Map;

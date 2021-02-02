@@ -1,4 +1,4 @@
-package org.ryebread.algorithmplayground.services.graphs;
+package org.ryebread.algorithmplayground.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,6 +14,8 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.ryebread.algorithmplayground.services.graph.GraphService;
+import org.ryebread.algorithmplayground.services.graph.GraphServiceImpl;
 import org.ryebread.algorithmplayground.structures.graph.AdjacencyMapGraph;
 import org.ryebread.algorithmplayground.structures.graph.EdgeType;
 import org.ryebread.algorithmplayground.structures.graph.Graph;

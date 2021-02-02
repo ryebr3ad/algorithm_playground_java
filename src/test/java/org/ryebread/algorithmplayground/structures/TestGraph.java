@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ryebread.algorithmplayground.structures.graph.EdgeType;
 import org.ryebread.algorithmplayground.structures.graph.Graph;
-import org.ryebread.algorithmplayground.services.graphs.GraphService;
-import org.ryebread.algorithmplayground.services.graphs.GraphServiceImpl;
+import org.ryebread.algorithmplayground.services.graph.GraphService;
+import org.ryebread.algorithmplayground.services.graph.GraphServiceImpl;
 import org.ryebread.algorithmplayground.structures.graph.AdjacencyMapGraph;
 
 public class TestGraph {
