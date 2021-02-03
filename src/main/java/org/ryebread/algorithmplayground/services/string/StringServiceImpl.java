@@ -87,4 +87,38 @@ public class StringServiceImpl implements StringService {
 		}
 		return currentState == searchStrLength ? currentIndex - searchStrLength : strLength;
 	}
+
+	@Override
+	public int boyerMoore(String str, String pattern) {
+		int right[] = createRightArray(pattern);
+		int strLength = str.length();
+		int patternLength = pattern.length();
+		int skip;
+		for (int i = 0; i < strLength - patternLength; i += skip) {
+			skip = 0;
+			for (int j = patternLength - 1; j >= 0; j--) {
+				if (pattern.charAt(j) != str.charAt(i + j)) {
+					skip = Math.max(1, j - right[str.charAt(i + j)]);
+					break;
+				}
+			}
+			if (skip == 0) {
+				return i;
+			}
+		}
+
+		return strLength;
+	}
+	
+	private int[] createRightArray(String pattern) {
+		int right[] = new int[RADIX];
+		for (int i = 0; i < RADIX; i++) {
+			right[i] = -1;
+		}
+		for (int i = 0; i < pattern.length(); i++) {
+			char c = pattern.charAt(i);
+			right[c] = i;
+		}
+		return right;
+	}
 }

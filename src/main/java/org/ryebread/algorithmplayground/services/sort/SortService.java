@@ -16,7 +16,7 @@ public interface SortService {
 	public void lsdRadixSort(String[] strings, int len);
 
 	public void msdRadixSort(String[] strings);
-	
+
 	public void threeWayRadixQuickSort(String[] strings);
 
 }

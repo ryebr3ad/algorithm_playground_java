@@ -11,4 +11,6 @@ public interface StringService {
 	public int[][] createDfa(String str);
 
 	public int knuthMorrisPratt(String str, String searchStr);
+	
+	public int boyerMoore(String str, String pattern);
 }

@@ -78,7 +78,11 @@ public class TestStringService {
 	}
 
 	@Test
-	public void testKnuthMorrisPratt() {
+	public void testBoyerMoore() {
+		String str = "This is a very long string that a pattern will check";
+		String pattern = "pattern";
+		int position = stringService.boyerMoore(str, pattern);
+		assertEquals(position, 34);
 
 	}
 
