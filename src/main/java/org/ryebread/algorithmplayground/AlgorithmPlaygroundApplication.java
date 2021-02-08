@@ -8,6 +8,6 @@ public class AlgorithmPlaygroundApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(AlgorithmPlaygroundApplication.class, args);
-	}
+	} 
 
 }
