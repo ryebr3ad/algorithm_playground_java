@@ -34,7 +34,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 	}
 
 	public void add(T element) {
-		RedBlackNode<T> newNode = createNewNode(element);
+		RedBlackNode<T> newNode = createNewNode(element); 
 		RedBlackNode<T> newParent = nil;
 		RedBlackNode<T> currentNode = root;
 		/*
