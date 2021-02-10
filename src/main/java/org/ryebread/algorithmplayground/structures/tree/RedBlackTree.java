@@ -10,7 +10,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 	private RedBlackNode<T> root;
 
 	public RedBlackTree() {
-		this.root = nil;
+		this.root = this.nil;
 	}
 
 	/**
@@ -33,15 +33,31 @@ public class RedBlackTree<T extends Comparable<T>> {
 		return foundNode == null ? null : foundNode.getElement();
 	}
 
+	public T min() {
+		return min(this.root).getElement();
+	}
+
+	private RedBlackNode<T> min(RedBlackNode<T> node) {
+		return drillInDirection(node, Direction.LEFT);
+	}
+
+	public T max() {
+		return max(this.root).getElement();
+	}
+
+	private RedBlackNode<T> max(RedBlackNode<T> node) {
+		return drillInDirection(node, Direction.RIGHT);
+	}
+
 	public void add(T element) {
 		RedBlackNode<T> newNode = createNewNode(element);
-		RedBlackNode<T> newParent = nil;
-		RedBlackNode<T> currentNode = root;
+		RedBlackNode<T> newParent = this.nil;
+		RedBlackNode<T> currentNode = this.root;
 		/*
 		 * Starting at the root, traverse the tree, going left if element is less
 		 * than the current node's value; otherwise, go right.
 		 */
-		while (currentNode != nil) {
+		while (currentNode != this.nil) {
 			newParent = currentNode;
 			if (element.compareTo(currentNode.getElement()) < 0) {
 				currentNode = currentNode.getLeft();
@@ -53,7 +69,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 		newNode.setParent(newParent);
 
 		//If the parent is nil, the loop was never entered.  Make the new node the root
-		if (newParent == nil) {
+		if (newParent == this.nil) {
 			this.root = newNode;
 		}
 		//Otherwise, determine whether the new node is the left or right child of the parent
@@ -63,7 +79,14 @@ public class RedBlackTree<T extends Comparable<T>> {
 			newParent.setRight(newNode);
 		}
 
-		fixRedBlackTree(newNode);
+		fixRedBlackTreeAfterAdd(newNode);
+	}
+
+	private RedBlackNode<T> createNewNode(T element) {
+		RedBlackNode<T> node = new RedBlackNode<>(element, Color.RED);
+		node.setLeft(this.nil);
+		node.setRight(this.nil);
+		return node;
 	}
 
 	/**
@@ -77,7 +100,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 	 *  5. For each node, all paths from the node to its descendant leaves contain the same number of BLACK nodes
 	 * @param node
 	 */
-	private void fixRedBlackTree(RedBlackNode<T> node) {
+	private void fixRedBlackTreeAfterAdd(RedBlackNode<T> node) {
 		RedBlackNode<T> currentNode = node;
 
 		/*
@@ -117,7 +140,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 			 *  of the red-black tree, any violation can only happen between the current
 			 *  node and its parent.
 			 */
-			RedBlackNode<T> grandParent = currentNode.getParent();
+			RedBlackNode<T> grandParent = parent.getParent();
 			if (parent == grandParent.getLeft()) {
 
 				/*
@@ -187,6 +210,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 					parent.setColor(Color.BLACK);
 					uncle.setColor(Color.BLACK);
 					grandParent.setColor(Color.RED);
+
 					currentNode = grandParent;
 				} else {
 					if (currentNode == parent.getLeft()) {
@@ -206,11 +230,250 @@ public class RedBlackTree<T extends Comparable<T>> {
 		this.root.setColor(Color.BLACK);
 	}
 
-	private RedBlackNode<T> createNewNode(T element) {
-		RedBlackNode<T> node = new RedBlackNode<>(element, Color.RED);
-		node.setLeft(nil);
-		node.setRight(nil);
-		return node;
+	public boolean delete(T element) {
+		RedBlackNode<T> nodeToBeRemoved = findNode(root, element);
+		if (nodeToBeRemoved == null) {
+			return false;
+		}
+
+		/*
+		 * `movedNode` will either reference the node being removed from the tree entirely, 
+		 * or the successor node that would be moved within the tree to replace the removed node
+		 */
+		RedBlackNode<T> movedNode = nodeToBeRemoved;
+		Color movedColor = movedNode.getColor();
+		RedBlackNode<T> replacementNode = null;
+
+		/*
+		 * Like a regular binary search tree, if `nodeToBeRemoved` has one or zero descendants,
+		 * replace it with its child that could potentially exist.  With no descendants,
+		 * the node will be replaced with `nil` which is acceptable
+		 */
+		if (nodeToBeRemoved.getLeft() == this.nil) {
+			replacementNode = nodeToBeRemoved.getRight();
+			transplant(nodeToBeRemoved, nodeToBeRemoved.getRight());
+		} else if (nodeToBeRemoved.getRight() == this.nil) {
+			replacementNode = nodeToBeRemoved.getLeft();
+			transplant(nodeToBeRemoved, nodeToBeRemoved.getLeft());
+		}
+		/*
+		 * The fun case.
+		 */
+		else {
+			/*
+			 * `movedNode` will now reference the successor of the node being deleted, which
+			 * requires an update of the `movedColor`.
+			 */
+			movedNode = min(nodeToBeRemoved.getRight());
+			movedColor = movedNode.getColor();
+
+			/*
+			 * `replacementNode` will now reference the right child of `movedNode`, which again could be nil.
+			 */
+			replacementNode = movedNode.getRight();
+
+			/*
+			 * If the successor node of `nodeToBeRemoved` is its right child,
+			 * ensure that the right child of `movedNode` refers to `movedNode` as its parent.
+			 * 
+			 * This step is profoundly confusing as one would think: the parent of `replacementNode` was set
+			 * to be the right child of `movedNode`, so `movedNode` should already be the parent, right?
+			 * 
+			 * However, if the right child of `movedNode` is `nil`, then the parent will not be set.
+			 * Since `nil` is a sentinel node, it could be pointing to anything as it's parent.  This block, then, assures
+			 * that the replacement node always points to the moved node.
+			 * 
+			 * This means the parent of `nil` could constantly be changing, but since its parent only matters from now
+			 * until the end of this method's execution, that's no problem
+			 */
+			if (movedNode.getParent() == nodeToBeRemoved) {
+				replacementNode.setParent(movedNode);
+			}
+			/*
+			 * Otherwise, `movedNode` is some number of levels down the tree.
+			 * 
+			 * Swap `movedNode` with its right child (which, again, could be `nil`, but that's fine,
+			 * then update the right child pointer to `nodeToBeRemoved's`
+			 */
+			else {
+				transplant(movedNode, movedNode.getRight());
+				movedNode.setRight(nodeToBeRemoved.getRight());
+				movedNode.getRight().setParent(movedNode);
+			}
+			//Swap `nodeToBeRemoved` with `movedNode`
+			transplant(nodeToBeRemoved, movedNode);
+
+			//Update the left child pointer to be that of `nodeToBeRemoved's`
+			movedNode.setLeft(nodeToBeRemoved.getLeft());
+			movedNode.getLeft().setParent(movedNode);
+
+			/*
+			 * `movedNode` has now taken `nodeToBeRemoved's place in the tree.  To keep everything
+			 *  kosher, update the color of `movedNode` to be that of `nodeToBeRemoved`
+			 */
+			movedNode.setColor(nodeToBeRemoved.getColor());
+		}
+		/*
+		 * If `movedNode` was originally black, `replacementNode` might now be causing a rule violation.
+		 * Check for that now.
+		 */
+		if (movedColor == Color.BLACK) {
+			fixRedBlackTreeAfterDelete(replacementNode);
+		}
+		return true;
+	}
+
+	/**
+	 * Replace oldNode with newNode
+	 * @param oldNode - the node being replaced
+	 * @param newNode - the replacement node
+	 */
+	private void transplant(RedBlackNode<T> oldNode, RedBlackNode<T> newNode) {
+		//Check if the old node was the root.  The new node, as a consequence, will be the root
+		if (oldNode.getParent() == this.nil) {
+			this.root = newNode;
+		}
+		/*
+		 * Otherwise, determine the relative descendant position of the old node against its parent and replace
+		 * it with the new node
+		 */
+		else if (oldNode == oldNode.getParent().getLeft()) {
+			oldNode.getParent().setLeft(newNode);
+		} else {
+			oldNode.getParent().setRight(newNode);
+		}
+
+		//No matter what, the old node's parent will become the new node's parent.  If it's the root, it will be nil.
+		newNode.setParent(oldNode.getParent());
+	}
+
+	private void fixRedBlackTreeAfterDelete(RedBlackNode<T> node) {
+		RedBlackNode<T> currentNode = node;
+
+		/*
+		 * Loop only if `currentNode` is not the root, and if it is BLACK
+		 * 
+		 * Technically, it'd be "doubly" BLACK -- meaning that, since a black node was removed,
+		 * the current node has absorbed it's BLACKness.  The goal of the loop is to rearrange
+		 * the tree so that "double" BLACKness is not required.
+		 */
+		while (currentNode != this.root && currentNode.getColor() == Color.BLACK) {
+
+			RedBlackNode<T> parentNode = currentNode.getParent();
+
+			/*
+			 * The first set of cases will only deal with the scenario where the current
+			 * node is the left child of its parent.
+			 * 
+			 * Since `currentNode` cannot be the root, there is sure to be a parent that
+			 * is not `nil`.
+			 */
+			if (currentNode == parentNode.getLeft()) {
+				/*
+				 * Store a reference to the sibling of `currentNode`.
+				 * 
+				 * We know that the sibling cannot equal `nil` due to the BLACK height rule.  Since
+				 * `currentNode` is, in effect, "doubly" BLACK, if its sibling is `nil` then the sibling would only
+				 * increment the BLACK height by 1.  `currentNode`, in effect, increments it by 2; already eclipsing
+				 * the height that the potential `nil` sibling would add.
+				 */
+				RedBlackNode<T> siblingNode = parentNode.getRight();
+
+				/*
+				 * This block can be considered a precursor that needs to be run if the sibling is RED.  In this case
+				 * the state of the tree will be mutated into a case that will be resolved further down the loop.
+				 * 
+				 * If `siblingNode` is RED, then its children are BLACK.  This case switches the colors of `siblingNode`
+				 * and `currentNode`, painting `siblingNode` BLACK and `currentNode` RED.  A left rotation of `parentNode`
+				 * follows, then a reassignment of `siblingNode` to the new right child of `parentNode, which will have
+				 * changed after the rotation.
+				 */
+				if (siblingNode.getColor() == Color.RED) {
+					siblingNode.setColor(Color.BLACK);
+					parentNode.setColor(Color.RED);
+					leftRotate(parentNode);
+					siblingNode = parentNode.getRight();
+				}
+				/*
+				 * Both of `siblingNode's` children are BLACK.  We know, also, that `siblingNode` is BLACK.  Set
+				 * `siblingNode` to be RED, then repeat the loop with `parentNode` being assigned to `currentNode`.
+				 * 
+				 * If the first case was encountered during execution of this loop, then the loop will not run again
+				 * as `parentNode` was set to RED.
+				 */
+				if (siblingNode.getLeft().getColor() == Color.BLACK
+						&& siblingNode.getRight().getColor() == Color.BLACK) {
+					siblingNode.setColor(Color.RED);
+					currentNode = parentNode;
+				}
+				//One of `siblingNode's` children is BLACK 
+				else {
+					/*
+					 * The case that's confirmed to resolve all red-black tree issues exists when `siblingNode` is BLACK
+					 * and its same side child is BLACK.  If the opposite side child is BLACK, the a step must be done
+					 * to mutate the tree in a way so that the same side child is BLACK, which is covered for here.
+					 * 
+					 * `siblingNode's` left child is set to BLACK, and `siblingNode` is set to RED.  A right rotation
+					 * is performed on `siblingNode`, pusing the left child up a level.
+					 */
+					if (siblingNode.getRight().getColor() == Color.BLACK) {
+						siblingNode.getLeft().setColor(Color.BLACK);
+						siblingNode.setColor(Color.RED);
+						rightRotate(siblingNode);
+						siblingNode = parentNode.getRight();
+					}
+					/*
+					 * This case will resolve all violations of red-black rules.  `siblingNode` takes on the same color
+					 * as `parentNode`, as `siblingNode` will be taking its spot in the tree after rotation.  `parentNode`
+					 * and `siblingNode's` right child, as the new children of `siblingNode` after rotation, will be colored
+					 * BLACK.
+					 * 
+					 * A left rotation is performed on the parent, resolving the conflicts of the tree.
+					 */
+					siblingNode.setColor(parentNode.getColor());
+					parentNode.setColor(Color.BLACK);
+					siblingNode.getRight().setColor(Color.BLACK);
+					leftRotate(parentNode);
+					currentNode = this.root;
+
+				}
+			}
+			/*
+			 * Same code as above, with the orientations flipped.
+			 */
+			else {
+				RedBlackNode<T> siblingNode = parentNode.getLeft();
+
+				/*
+				 * If `siblingNode` is RED, it is guaranteed to have BLACK children.
+				 */
+				if (siblingNode.getColor() == Color.RED) {
+					siblingNode.setColor(Color.BLACK);
+					parentNode.setColor(Color.RED);
+					rightRotate(parentNode);
+					siblingNode = parentNode.getLeft();
+				}
+				if (siblingNode.getRight().getColor() == Color.BLACK
+						&& siblingNode.getLeft().getColor() == Color.BLACK) {
+					siblingNode.setColor(Color.RED);
+					currentNode = parentNode;
+				} else {
+					if (siblingNode.getLeft().getColor() == Color.BLACK) {
+						siblingNode.getRight().setColor(Color.BLACK);
+						siblingNode.setColor(Color.RED);
+						leftRotate(siblingNode);
+						siblingNode = parentNode.getLeft();
+					}
+					siblingNode.setColor(parentNode.getColor());
+					parentNode.setColor(Color.BLACK);
+					siblingNode.getLeft().setColor(Color.BLACK);
+					rightRotate(parentNode);
+					currentNode = this.root;
+				}
+			}
+		}
+		//Always set the current node's color to BLACK
+		currentNode.setColor(Color.BLACK);
 	}
 
 	/**
@@ -242,7 +505,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 
 		//Move `y's` left child to `node's` right
 		node.setRight(y.getLeft());
-		if (y.getLeft() != nil) {
+		if (y.getLeft() != this.nil) {
 			y.getLeft().setParent(node);
 		}
 
@@ -250,7 +513,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 		y.setParent(node.getParent());
 
 		//If the parent of `node` is nil, then it's the root.  Make `y` the new root
-		if (node.getParent() == nil) {
+		if (node.getParent() == this.nil) {
 			this.root = y;
 		}
 		/*
@@ -294,7 +557,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 
 		//Move `y's` right child to `node's` left
 		node.setLeft(y.getRight());
-		if (y.getRight() != nil) {
+		if (y.getRight() != this.nil) {
 			y.getRight().setParent(node);
 		}
 
@@ -302,7 +565,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 		y.setParent(node.getParent());
 
 		//If the parent of `node` is nil, then it's the root.  Make `y` the new root
-		if (node.getParent() == nil) {
+		if (node.getParent() == this.nil) {
 			this.root = y;
 		}
 		/*
@@ -318,11 +581,11 @@ public class RedBlackTree<T extends Comparable<T>> {
 		y.setRight(node);
 		node.setParent(y);
 
-		fixRedBlackTree(node);
+		fixRedBlackTreeAfterAdd(node);
 	}
 
 	private void inOrderTraversalWithList(List<T> elements, RedBlackNode<T> node) {
-		if (node != nil) {
+		if (node != this.nil) {
 			inOrderTraversalWithList(elements, node.getLeft());
 			elements.add(node.getElement());
 			inOrderTraversalWithList(elements, node.getRight());
@@ -330,7 +593,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 	}
 
 	private RedBlackNode<T> findNode(RedBlackNode<T> node, T element) {
-		if (node == null) {
+		if (node == this.nil) {
 			return null;
 		}
 		if (node.getElement().equals(element)) {
@@ -340,6 +603,25 @@ public class RedBlackTree<T extends Comparable<T>> {
 			return findNode(node.getLeft(), element);
 		} else {
 			return findNode(node.getRight(), element);
+		}
+	}
+
+	/**
+	 * Return the element of the node farthest from the passed in node
+	 * from the indicated direction
+	 * @param node
+	 * @param direction
+	 * @return
+	 */
+	private RedBlackNode<T> drillInDirection(RedBlackNode<T> node, Direction direction) {
+		RedBlackNode<T> currNode = node;
+		while (currNode != this.nil && currNode.getChild(direction) != this.nil) {
+			currNode = currNode.getChild(direction);
+		}
+		if (currNode == this.nil) {
+			return this.nil;
+		} else {
+			return currNode;
 		}
 	}
 

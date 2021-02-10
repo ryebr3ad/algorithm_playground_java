@@ -58,18 +58,20 @@ public class BinarySearchTree<T extends Comparable<T>> {
 	}
 
 	public T min() {
-		return min(this.root);
+		BinaryNode<T> minNode = min(this.root);
+		return minNode == null ? null : minNode.getElement();
 	}
 
-	public T min(BinaryNode<T> node) {
+	private BinaryNode<T> min(BinaryNode<T> node) {
 		return drillInDirection(node, Direction.LEFT);
 	}
 
 	public T max() {
-		return max(this.root);
+		BinaryNode<T> maxNode = max(this.root);
+		return maxNode == null ? null : maxNode.getElement();
 	}
 
-	public T max(BinaryNode<T> node) {
+	private BinaryNode<T> max(BinaryNode<T> node) {
 		return drillInDirection(node, Direction.RIGHT);
 	}
 
@@ -167,14 +169,14 @@ public class BinarySearchTree<T extends Comparable<T>> {
 		}
 	}
 
-	private BinaryNode<T> adjacentElement(T element, Direction direction, Function<BinaryNode<T>, T> func) {
+	private BinaryNode<T> adjacentElement(T element, Direction direction, Function<BinaryNode<T>, BinaryNode<T>> func) {
 		BinaryNode<T> foundNode = this.findNode(this.root, element);
 		if (foundNode == null) {
 			return null;
 		}
 		if (foundNode.getChild(direction) != null) {
 			BinaryNode<T> childNode = foundNode.getChild(direction);
-			return findNode(childNode, func.apply(childNode));
+			return func.apply(childNode);
 		}
 		BinaryNode<T> parentNode = foundNode.getParent();
 		while (parentNode != null && foundNode == parentNode.getChild(direction)) {
@@ -191,7 +193,7 @@ public class BinarySearchTree<T extends Comparable<T>> {
 	 * @param direction
 	 * @return
 	 */
-	private T drillInDirection(BinaryNode<T> node, Direction direction) {
+	private BinaryNode<T> drillInDirection(BinaryNode<T> node, Direction direction) {
 		BinaryNode<T> currNode = node;
 		while (currNode != null && currNode.getChild(direction) != null) {
 			currNode = currNode.getChild(direction);
@@ -199,7 +201,7 @@ public class BinarySearchTree<T extends Comparable<T>> {
 		if (currNode == null) {
 			return null;
 		} else {
-			return currNode.getElement();
+			return currNode;
 		}
 	}
 

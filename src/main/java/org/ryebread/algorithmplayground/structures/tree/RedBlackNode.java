@@ -62,4 +62,12 @@ public class RedBlackNode<T extends Comparable<T>> {
 		this.right = right;
 	}
 
+	public RedBlackNode<T> getChild(Direction direction) {
+		return direction == Direction.LEFT ? this.left : this.right;
+	}
+
+	public String toString() {
+		return "[ " + this.element + " ]";
+	}
+
 }
