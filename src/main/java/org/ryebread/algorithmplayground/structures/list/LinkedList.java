@@ -76,14 +76,26 @@ public class LinkedList<T extends Comparable<T>> {
 		}
 		return all;
 	}
+	
+	public boolean remove(T element) {
+		Node<T> foundNode = findNode(element);
+		if(foundNode == this.nil) {
+			return false;
+		}
+		
+		foundNode.getPrev().setNext(foundNode.getNext());
+		foundNode.getNext().setPrev(foundNode.getPrev());
+		
+		foundNode.setNext(null);
+		foundNode.setPrev(null);
+		
+		size--;
+		
+		return true;
+	}
 
 	private Node<T> getHead() {
 		return this.nil.getNext();
-	}
-
-	private void setHead(Node<T> node) {
-		node.setPrev(this.nil);
-		this.nil.setNext(node);
 	}
 
 	/**
