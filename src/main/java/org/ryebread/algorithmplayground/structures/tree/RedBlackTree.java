@@ -264,13 +264,13 @@ public class RedBlackTree<T extends Comparable<T>> {
 			 * `movedNode` will now reference the successor of the node being deleted, which
 			 * requires an update of the `movedColor`.
 			 */
-			movedNode = min(nodeToBeRemoved.getRight());
+			movedNode = max(nodeToBeRemoved.getLeft());
 			movedColor = movedNode.getColor();
 
 			/*
-			 * `replacementNode` will now reference the right child of `movedNode`, which again could be nil.
+			 * `replacementNode` will now reference the left child of `movedNode`, which again could be nil.
 			 */
-			replacementNode = movedNode.getRight();
+			replacementNode = movedNode.getLeft();
 
 			/*
 			 * If the successor node of `nodeToBeRemoved` is its right child,
@@ -296,16 +296,16 @@ public class RedBlackTree<T extends Comparable<T>> {
 			 * then update the right child pointer to `nodeToBeRemoved's`
 			 */
 			else {
-				transplant(movedNode, movedNode.getRight());
-				movedNode.setRight(nodeToBeRemoved.getRight());
-				movedNode.getRight().setParent(movedNode);
+				transplant(movedNode, movedNode.getLeft());
+				movedNode.setLeft(nodeToBeRemoved.getLeft());
+				movedNode.getLeft().setParent(movedNode);
 			}
 			//Swap `nodeToBeRemoved` with `movedNode`
 			transplant(nodeToBeRemoved, movedNode);
 
 			//Update the left child pointer to be that of `nodeToBeRemoved's`
-			movedNode.setLeft(nodeToBeRemoved.getLeft());
-			movedNode.getLeft().setParent(movedNode);
+			movedNode.setRight(nodeToBeRemoved.getRight());
+			movedNode.getRight().setParent(movedNode);
 
 			/*
 			 * `movedNode` has now taken `nodeToBeRemoved's place in the tree.  To keep everything
@@ -358,7 +358,6 @@ public class RedBlackTree<T extends Comparable<T>> {
 		 * the tree so that "double" BLACKness is not required.
 		 */
 		while (currentNode != this.root && currentNode.getColor() == Color.BLACK) {
-
 			RedBlackNode<T> parentNode = currentNode.getParent();
 
 			/*
@@ -553,6 +552,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 	 * @param node - the focal point of the rotation
 	 */
 	private void rightRotate(RedBlackNode<T> node) {
+
 		RedBlackNode<T> y = node.getLeft();
 
 		//Move `y's` right child to `node's` left
@@ -581,7 +581,6 @@ public class RedBlackTree<T extends Comparable<T>> {
 		y.setRight(node);
 		node.setParent(y);
 
-		fixRedBlackTreeAfterAdd(node);
 	}
 
 	private void inOrderTraversalWithList(List<T> elements, RedBlackNode<T> node) {
@@ -623,6 +622,10 @@ public class RedBlackTree<T extends Comparable<T>> {
 		} else {
 			return currNode;
 		}
+	}
+
+	public T getRoot() {
+		return this.root.getElement();
 	}
 
 }
