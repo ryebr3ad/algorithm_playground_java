@@ -93,6 +93,24 @@ public class LinkedList<T extends Comparable<T>> {
 		
 		return true;
 	}
+	
+	public int getSize() {
+		return this.size;
+	}
+	
+	/**
+	 * Returns a copy of this list with the elements reversed.
+	 * @return
+	 */
+	public LinkedList<T> reverse() {
+		LinkedList<T> reversed = new LinkedList<>();
+		Node<T> currNode = getTail();
+		while(currNode != this.nil) {
+			reversed.add(currNode.getElement());
+			currNode = currNode.getPrev();
+		}
+		return reversed;
+	}
 
 	private Node<T> getHead() {
 		return this.nil.getNext();

@@ -52,5 +52,22 @@ public class TestLinkedList {
 		assertEquals(all[2], 1);
 		assertEquals(all[3], 2);
 	}
+	
+	@Test
+	public void testReverse() {
+		LinkedList<Integer> list = new LinkedList<>();
+		list.add(5);
+		list.add(3);
+		list.add(4);
+		list.add(1);
+		list.add(2);
+		
+		Integer all[] = list.reverse().all(new Integer[0]);
+		assertEquals(all[0], 2);
+		assertEquals(all[1], 1);
+		assertEquals(all[2], 4);
+		assertEquals(all[3], 3);
+		assertEquals(all[4], 5);
+	}
 
 }
