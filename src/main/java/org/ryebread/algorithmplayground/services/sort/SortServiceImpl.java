@@ -76,14 +76,15 @@ public class SortServiceImpl implements SortService {
 
 	/**
 	 * Gets the log base 2 value of the element length to determine the size of the
-	 * list
+	 * pair list
 	 * 
 	 * Math.log() has no parameter to set the base, so use the property of logs:
 	 * 
 	 * log b (a) = log c (a) / log c (b)
 	 * 
-	 * b = 2, a = elements.length, c can be anything -- here, we're using Math.log(),
-	 * which would make it `e`
+	 * b = 2 
+	 * a = elements.length 
+	 * c can be anything -- here, we're using Math.log(), which would make it `e`
 	 */
 	private int pairListSize(long length) {
 		return (int) Math.ceil(Math.log(length) / Math.log(2)) + 1;

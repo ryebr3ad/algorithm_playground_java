@@ -25,9 +25,8 @@ public abstract class Heap {
 			heapify(i);
 		}
 	}
- 
-	protected int maxNonLeafNode(int heapSize) {
 
+	protected int maxNonLeafNode(int heapSize) {
 		return (int) Math.floor(heapSize / 2) - 1;
 	}
 
@@ -53,7 +52,7 @@ public abstract class Heap {
 	public boolean isEmpty() {
 		return this.heapSize <= 0;
 	}
-	
+
 	public Integer[] getTree() {
 		return Arrays.copyOfRange(tree, 0, heapSize);
 	}

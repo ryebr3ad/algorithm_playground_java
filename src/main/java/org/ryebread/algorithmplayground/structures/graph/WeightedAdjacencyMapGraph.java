@@ -1,6 +1,8 @@
 package org.ryebread.algorithmplayground.structures.graph;
 
-public class WeightedAdjacencyMapGraph<T extends Comparable<T>> extends AdjacencyMapGraph<T> implements WeightedGraph<T> {
+import java.util.Collection;
+
+public class WeightedAdjacencyMapGraph<T> extends AdjacencyMapGraph<T> implements WeightedGraph<T> {
 
 	public static final Long DEFAULT_WEIGHT = 5L;
 
@@ -8,7 +10,7 @@ public class WeightedAdjacencyMapGraph<T extends Comparable<T>> extends Adjacenc
 		super();
 	}
 	
-	public WeightedAdjacencyMapGraph(Iterable<T> vertices) {
+	public WeightedAdjacencyMapGraph(Collection<T> vertices) {
 		super(vertices);
 	}
 
@@ -16,7 +18,7 @@ public class WeightedAdjacencyMapGraph<T extends Comparable<T>> extends Adjacenc
 		super(edgeType);
 	}
 
-	public WeightedAdjacencyMapGraph(Iterable<T> vertices, EdgeType undirected) {
+	public WeightedAdjacencyMapGraph(Collection<T> vertices, EdgeType undirected) {
 		super(vertices, undirected);
 	}
 

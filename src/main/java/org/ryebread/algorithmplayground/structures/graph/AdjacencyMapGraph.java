@@ -1,34 +1,63 @@
 package org.ryebread.algorithmplayground.structures.graph;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class AdjacencyMapGraph<T extends Comparable<T>> implements Graph<T> {
+/**
+ * Implementation of a graph data structure using adjacency lists.
+ * The map, in this instance, is acting as an associative array.  This allows
+ * the use of any object to act as nodes to the graph, presuming it can prehash
+ * as is expected.
+ * 
+ * @author Ryan
+ *
+ * @param <T>
+ */
+public class AdjacencyMapGraph<T> implements Graph<T> {
 
 	protected Map<T, List<Edge<T>>> incidenceMap;
 	protected EdgeType edgeType;
 
+	/**
+	 * By default, graphs will be directed
+	 */
 	public AdjacencyMapGraph() {
 		this(EdgeType.DIRECTED);
 	}
 
-	public AdjacencyMapGraph(Iterable<T> vertices) {
+	/**
+	 * If a collection of vertices already exists, use this constructor
+	 * to build a graph with those vertices
+	 * @param vertices
+	 */
+	public AdjacencyMapGraph(Collection<T> vertices) {
 		this(vertices, EdgeType.DIRECTED);
 	}
 
+	/**
+	 * Specify the edge type of the graph with this constructor
+	 * @param edgeType
+	 */
 	public AdjacencyMapGraph(EdgeType edgeType) {
 		this(null, edgeType);
 	}
 
-	public AdjacencyMapGraph(Iterable<T> vertices, EdgeType edgeType) {
-		this.incidenceMap = new HashMap<>();
-		if (vertices != null) {
-			for (T vertex : vertices) {
-				this.incidenceMap.put(vertex, new LinkedList<>());
-			}
-		}
+	/**
+	 * The most composable of the constructors, which iterates over a collection
+	 * of known vertices under the strategy of a specific edge type
+	 * @param vertices
+	 * @param edgeType
+	 */
+	public AdjacencyMapGraph(Collection<T> vertices, EdgeType edgeType) {
+		Stream<T> stream = vertices == null ? Stream.empty() : vertices.stream();
+		this.incidenceMap = stream.parallel()
+				.collect(Collectors.toMap(Function.identity(), (v) -> new LinkedList<Edge<T>>()));
 		this.edgeType = edgeType;
 	}
 
@@ -43,14 +72,14 @@ public class AdjacencyMapGraph<T extends Comparable<T>> implements Graph<T> {
 	public int numVertices() {
 		return incidenceMap.keySet().size();
 	}
-	
+
 	@Override
 	public boolean hasVertex(T vertex) {
 		return incidenceMap.containsKey(vertex);
 	}
 
 	@Override
-	public Iterable<T> getVertices() {
+	public Collection<T> getVertices() {
 		return incidenceMap.keySet();
 	}
 
@@ -77,7 +106,7 @@ public class AdjacencyMapGraph<T extends Comparable<T>> implements Graph<T> {
 	}
 
 	@Override
-	public Iterable<Edge<T>> getEdges(T vertex) {
+	public Collection<Edge<T>> getEdges(T vertex) {
 		return this.incidenceMap.get(vertex);
 	}
 
@@ -85,17 +114,17 @@ public class AdjacencyMapGraph<T extends Comparable<T>> implements Graph<T> {
 	public boolean hasEdge(T from, T to) {
 		return getEdge(from, to) != null;
 	}
-	
+
 	@Override
 	public Graph<T> reverse() {
 		Graph<T> reversedGraph = new AdjacencyMapGraph<T>(this.getVertices());
 
-		for(T vertex : this.getVertices()) {
-			for(Edge<T> edge : this.getEdges(vertex)) {
+		for (T vertex : this.getVertices()) {
+			for (Edge<T> edge : this.getEdges(vertex)) {
 				reversedGraph.addEdge(edge.to(), edge.from());
 			}
 		}
-		
+
 		return reversedGraph;
 	}
 
